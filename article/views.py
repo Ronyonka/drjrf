@@ -1,19 +1,26 @@
-from rest_framework.generics import get_object_or_404
+from rest_framework.generics import get_object_or_404, GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.mixins import ListModelMixin
 
 from .models import Article
 from .serializers import ArticleSerializer
 
-class ArticleView(APIView):
-    def get(self, request, pk=None):
-        if pk:
-            article = get_object_or_404(Article.objects.all(), pk=pk)
-            serializer = ArticleSerializer(article)
-            return Response({"article": serializer.data})
-        articles = Article.objects.all()
-        serializer = ArticleSerializer(articles, many=True)
-        return Response({"articles": serializer.data})
+class ArticleView(ListModelMixin, GenericAPIView):
+    queryset = Article.objects.all()
+    serializer_class = ArticleSerializer
+
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, *kwargs)
+
+    # def get(self, request, pk=None):
+    #     if pk:
+    #         article = get_object_or_404(Article.objects.all(), pk=pk)
+    #         serializer = ArticleSerializer(article)
+    #         return Response({"article": serializer.data})
+    #     articles = Article.objects.all()
+    #     serializer = ArticleSerializer(articles, many=True)
+    #     return Response({"articles": serializer.data})
 
     def post(self, request):
         article = request.data.get('article')
